@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Start</title>
+<style>
+:root{
+  --bg:#262628;--card:#2e2e31;--line:#3b3b40;--text:#ececef;--mute:#8e8e96;--accent:#8ab4f8;--danger:#f28b82;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#f4f4f6;--card:#fff;--line:#e2e2e7;--text:#1d1d1f;--mute:#6e6e76;--accent:#1a66e0;--danger:#d93025}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+
+/* Werkzeugleiste oben rechts */
+.top{position:fixed;top:10px;right:14px;z-index:30}
+.tools{display:flex;gap:6px;align-items:center;padding:4px;border-radius:12px;border:1px solid transparent}
+body.edit .tools{background:var(--card);border-color:var(--line)}
+.tbtn{background:none;border:1px solid transparent;border-radius:8px;padding:6px 10px;color:var(--mute)}
+.tbtn:hover{color:var(--text);border-color:var(--line)}
+.aibtn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;white-space:nowrap}
+.aibtn:hover{border-color:var(--accent);color:var(--accent)}
+body.edit #editBtn{color:var(--accent);border-color:var(--accent)}
+.only-edit{display:none}
+body.edit .only-edit{display:inline-block}
+
+/* Logo */
+.logo-wrap{display:none;max-width:1100px;margin:0 auto;padding:64px 24px 0;flex-direction:column;align-items:center;gap:10px}
+.logo-wrap.has,body.edit .logo-wrap{display:flex}
+body.edit .logo-wrap:not(.has){padding-top:20px}
+.logo-wrap img{display:block;max-width:100%;object-fit:contain}
+.logo-wrap img[hidden]{display:none}
+.logo-ctl{display:none;align-items:center;gap:8px;font-size:12px;color:var(--mute)}
+body.edit .logo-ctl{display:flex}
+.logo-extra{display:inline-flex;align-items:center;gap:8px}
+.logo-wrap:not(.has) .logo-extra{display:none}
+.logo-ctl input[type=range]{width:150px;accent-color:var(--accent);vertical-align:middle}
+
+/* Fläche mit frei platzierbaren Gruppen */
+main{padding-bottom:40px}
+.board{position:relative;width:100%;max-width:1600px;margin:0 auto;min-height:60vh}
+.empty{position:absolute;left:0;right:0;top:60px;text-align:center;color:var(--mute);padding:0 24px}
+
+.group{position:absolute;top:0;left:50%;width:340px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px}
+body.edit .group{border-style:dashed}
+.group.moving{z-index:10;box-shadow:0 14px 34px rgba(0,0,0,.4);border-color:var(--accent)}
+.ghead{display:flex;align-items:center;gap:6px;margin-bottom:10px;min-height:30px}
+.ghead h2{margin:0;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:0 4px}
+.gname{flex:1;min-width:0;background:none;border:0;border-bottom:1px dashed var(--line);padding:4px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;outline:none}
+.gname:focus{border-color:var(--accent)}
+.handle{cursor:grab;color:var(--mute);user-select:none;padding:4px 8px;font-size:16px;touch-action:none;border-radius:6px}
+.handle:hover{color:var(--accent);background:rgba(127,127,140,.14)}
+.group.moving .handle{cursor:grabbing}
+.icon-btn{background:none;border:0;color:var(--mute);font-size:18px;line-height:1;padding:2px 6px;border-radius:6px}
+.icon-btn:hover{color:var(--danger)}
+
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;min-height:20px}
+.link{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px 8px;border-radius:12px;color:var(--text);text-decoration:none;min-width:0}
+.link:hover{background:rgba(127,127,140,.14)}
+.link.dragging{opacity:.35}
+.link.over{outline:2px dashed var(--accent);outline-offset:-2px}
+.lname{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.edit .link{cursor:grab}
+
+.ico{width:44px;height:44px;border-radius:12px;background:rgba(127,127,140,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.ico img{width:28px;height:28px;object-fit:contain;border-radius:6px}
+.ico img.full{width:100%;height:100%;border-radius:0;object-fit:cover}
+.ico span{font-weight:600;font-size:18px;color:var(--mute)}
+
+.addlink{display:none}
+body.edit .addlink{display:flex}
+.addlink{flex-direction:column;align-items:center;gap:6px;padding:10px 4px 8px;border:1px dashed var(--line);border-radius:12px;background:none;color:var(--mute);font-size:12px}
+.addlink .ico{background:none;font-size:22px;color:var(--mute)}
+.addlink:hover{border-color:var(--accent);color:var(--accent)}
+
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:22px;width:min(400px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog h3{margin:0 0 14px;font-size:16px}
+dialog label{display:block;font-size:12px;color:var(--mute);margin-bottom:12px}
+dialog input[type=text],dialog input[type=url]{display:block;width:100%;margin-top:4px;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);outline:none}
+dialog input:focus{border-color:var(--accent)}
+.imgrow{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.imgrow input[type=file]{flex:1;font-size:12px;min-width:0}
+.btns{display:flex;gap:8px;margin-top:16px;align-items:center}
+.sp{flex:1}
+.btn{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:none}
+.btn:hover{border-color:var(--mute)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#111}
+.btn.danger{color:var(--danger)}
+.hint{font-size:12px;color:var(--mute);margin:0}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="tools">
+    <button class="tbtn only-edit" id="addGroupBtn" title="Neue Gruppe anlegen">+ Gruppe</button>
+    <button class="tbtn only-edit" id="arrangeBtn" title="Alle Gruppen automatisch anordnen">⊞ Anordnen</button>
+    <button class="tbtn only-edit" id="exportBtn" title="Als JSON sichern">Export</button>
+    <button class="tbtn only-edit" id="importBtn" title="JSON laden">Import</button>
+    <a class="aibtn" id="aiBtn" href="https://www.google.com/search?udm=50" title="Google KI-Modus">✦ KI-Modus</a>
+    <button class="tbtn" id="editBtn" title="Bearbeiten">✎ Bearbeiten</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" hidden>
+</div>
+
+<div class="logo-wrap" id="logoWrap">
+  <img id="logoImg" alt="Logo" hidden>
+  <div class="logo-ctl">
+    <button type="button" class="tbtn" id="logoBtn" title="Bild auswählen – geht auch per Strg+V oder Drag &amp; Drop">🖼 Logo einfügen</button>
+    <span class="logo-extra">
+      <label>Größe <input type="range" id="logoSize" min="60" max="400" step="5" value="120"></label>
+      <button type="button" class="tbtn" id="logoDel">Entfernen</button>
+    </span>
+  </div>
+  <input type="file" id="logoFile" accept="image/*" hidden>
+</div>
+
+<main><div class="board" id="board"></div></main>
+
+<dialog id="dlg">
+  <form id="f">
+    <h3 id="dtitle">Link</h3>
+    <label>Name<input type="text" id="fname" required></label>
+    <label>URL<input type="text" id="furl" required placeholder="https://…"></label>
+    <label>Bild-URL (optional)<input type="text" id="fimg" placeholder="leer = Icon der Webseite"></label>
+    <div class="imgrow">
+      <input type="file" id="ffile" accept="image/*">
+      <span class="ico" id="prev"></span>
+    </div>
+    <p class="hint"><a href="#" id="resetImg" style="color:var(--accent)">Bild zurücksetzen</a></p>
+    <div class="btns">
+      <button type="button" class="btn danger" id="bdel">Löschen</button>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="bcancel">Abbrechen</button>
+      <button class="btn primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="startseite.js"></script>
+</body>
+</html>

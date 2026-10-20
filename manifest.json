@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Custom New Tab",
+  "version": "1.0",
+  "description": "Minimalistische Startseite als neuer Tab: Gruppen, Link-Icons, Logo, frei verschiebbar.",
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "startseite.html"
+  }
+}
